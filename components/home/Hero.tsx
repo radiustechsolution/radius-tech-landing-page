@@ -6,6 +6,9 @@ import { motion, useScroll, useTransform } from "motion/react";
 
 import { GlowButton } from "@/components/ui/GlowButton";
 import { TypingTerminal } from "./hero/TypingTerminal";
+import { MobileRobot } from "./hero/MobileRobot";
+import { isLowPower } from "@/lib/device";
+import { DESKTOP_QUERY } from "@/lib/useMedia";
 import { cn } from "@/lib/utils";
 
 const RobotScene = dynamic(() => import("./hero/RobotScene"), { ssr: false });
@@ -24,7 +27,6 @@ const titleLines: { text: string; className?: string }[][] = [
   [{ text: "digital products" }],
 ];
 
-/* Title words animate with CSS so they appear as soon as the HTML arrives */
 function Title() {
   let wordIndex = 0;
 
@@ -58,15 +60,21 @@ function Title() {
   );
 }
 
+type SceneMode = "pending" | "3d" | "drawn";
+
 export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const [sceneVisible, setSceneVisible] = useState(true);
-  const [mountScene, setMountScene] = useState(false);
+  const [mode, setMode] = useState<SceneMode>("pending");
 
-  // Load the 3D robot only after the page has finished its first work
   useEffect(() => {
-    const start = () => setMountScene(true);
+    const desktop = window.matchMedia(DESKTOP_QUERY).matches;
+    if (!desktop || isLowPower()) {
+      setMode("drawn");
+      return;
+    }
+    const start = () => setMode("3d");
     if ("requestIdleCallback" in window) {
       const id = window.requestIdleCallback(start, { timeout: 1500 });
       return () => window.cancelIdleCallback(id);
@@ -75,7 +83,6 @@ export function Hero() {
     return () => clearTimeout(t);
   }, []);
 
-  // Pause 3D rendering when the hero is off screen
   useEffect(() => {
     const el = sceneRef.current;
     if (!el) return;
@@ -95,15 +102,17 @@ export function Hero() {
   const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 0.85]);
   const sceneY = useTransform(scrollYProgress, [0, 1], [0, 80]);
 
+  const is3d = mode === "3d";
+
   return (
     <section
       ref={sectionRef}
       className="relative isolate overflow-hidden pt-[76px]"
     >
       <div className="container-x grid min-h-[calc(100dvh-76px)] items-center gap-6 lg:grid-cols-12 lg:gap-8">
-        {/* ---------- Text ---------- */}
+        {/* ---------- Text (scroll drift on desktop only) ---------- */}
         <motion.div
-          style={{ y: textY, opacity: textOpacity }}
+          style={is3d ? { y: textY, opacity: textOpacity } : undefined}
           className="relative z-10 pt-10 lg:col-span-6 lg:pt-0"
         >
           <Title />
@@ -128,54 +137,72 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* ---------- 3D Scene ---------- */}
+        {/* ---------- Robot ---------- */}
         <motion.div
           ref={sceneRef}
-          style={{ scale: sceneScale, y: sceneY }}
-          className="relative h-[440px] sm:h-[540px] lg:col-span-6 lg:h-[660px]"
+          style={is3d ? { scale: sceneScale, y: sceneY } : undefined}
+          className="relative h-[400px] sm:h-[500px] lg:col-span-6 lg:h-[660px]"
         >
-          <div className="absolute top-1/2 left-1/2 -z-10 size-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(217,220,227,0.12),transparent)]" />
-
-          {mountScene && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1.2, ease }}
-              className="pointer-events-none absolute inset-y-0 left-1/2 w-[150%] -translate-x-1/2 lg:w-[160%]"
-            >
-              <RobotScene active={sceneVisible} />
-            </motion.div>
-          )}
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.9, ease }}
-            className="absolute bottom-6 left-0 z-10 hidden sm:block"
+          <div
+            className={cn(
+              "absolute inset-0 animate-fade-up",
+              mode === "drawn"
+                ? "block"
+                : mode === "pending"
+                  ? "lg:hidden"
+                  : "hidden",
+            )}
+            style={{ animationDelay: "0.2s" }}
           >
-            <TypingTerminal />
-          </motion.div>
+            <MobileRobot />
+          </div>
+
+          {is3d && (
+            <>
+              <div className="absolute top-1/2 left-1/2 -z-10 size-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(217,220,227,0.12),transparent)]" />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 1.2, ease }}
+                className="pointer-events-none absolute inset-y-0 left-1/2 w-[160%] -translate-x-1/2"
+              >
+                <RobotScene active={sceneVisible} />
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.6, duration: 0.9, ease }}
+                className="absolute bottom-6 left-0 z-10"
+              >
+                <TypingTerminal />
+              </motion.div>
+            </>
+          )}
         </motion.div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.2, duration: 1 }}
-        className="pointer-events-none absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 lg:flex"
-      >
-        <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-600">
-          Scroll
-        </span>
-        <span className="relative h-12 w-px overflow-hidden bg-white/10">
-          <motion.span
-            className="absolute inset-x-0 top-0 h-1/2 bg-linear-to-b from-transparent to-white"
-            animate={{ y: ["-100%", "200%"] }}
-            transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-          />
-        </span>
-      </motion.div>
+      {is3d && (
+        <div
+          className="pointer-events-none absolute bottom-8 left-1/2 flex -translate-x-1/2 animate-fade-up flex-col items-center gap-3"
+          style={{ animationDelay: "1.2s" }}
+        >
+          <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-600">
+            Scroll
+          </span>
+          <span className="relative h-12 w-px overflow-hidden bg-white/10">
+            <motion.span
+              className="absolute inset-x-0 top-0 h-1/2 bg-linear-to-b from-transparent to-white"
+              animate={{ y: ["-100%", "200%"] }}
+              transition={{
+                duration: 1.8,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+            />
+          </span>
+        </div>
+      )}
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-linear-to-b from-transparent to-black/60" />
     </section>

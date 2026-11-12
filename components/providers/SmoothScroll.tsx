@@ -6,6 +6,7 @@ import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { DESKTOP_QUERY } from "@/lib/useMedia";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -22,7 +23,6 @@ function ScrollReset({ lenis }: { lenis: Lenis | null }) {
   useEffect(() => {
     const hash = window.location.hash;
 
-    // Arriving with a #section — scroll to it after the page renders
     if (hash) {
       const t = setTimeout(() => {
         const el = document.querySelector<HTMLElement>(hash);
@@ -33,13 +33,17 @@ function ScrollReset({ lenis }: { lenis: Lenis | null }) {
             immediate: true,
             force: true,
           });
-        else el.scrollIntoView();
+        else
+          window.scrollTo({
+            top:
+              el.getBoundingClientRect().top + window.scrollY + SCROLL_OFFSET,
+          });
         ScrollTrigger.refresh();
       }, 100);
       return () => clearTimeout(t);
     }
 
-    lenis?.scrollTo(0, { immediate: true, force: true });
+    if (lenis) lenis.scrollTo(0, { immediate: true, force: true });
     ScrollTrigger.refresh();
   }, [pathname, lenis]);
 
@@ -50,15 +54,16 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
   const [lenis, setLenis] = useState<Lenis | null>(null);
 
   useEffect(() => {
+    // Phones/tablets: native scrolling (faster). Reduced motion: native too.
+    const desktop = window.matchMedia(DESKTOP_QUERY).matches;
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches;
-    if (reduceMotion) return;
+    if (!desktop || reduceMotion) return;
 
     const instance = new Lenis({
       lerp: 0.09,
       wheelMultiplier: 1,
-      touchMultiplier: 1.4,
       anchors: { offset: SCROLL_OFFSET },
     });
 

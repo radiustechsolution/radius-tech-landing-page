@@ -3,6 +3,7 @@ import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 import { SmoothScroll } from "@/components/providers/SmoothScroll";
+import { MotionProvider } from "@/components/providers/MotionProvider";
 import { Background } from "@/components/layout/Background";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
@@ -76,7 +77,6 @@ export const viewport: Viewport = {
   colorScheme: "dark",
 };
 
-/* Business details for Google */
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
@@ -114,12 +114,14 @@ export default function RootLayout({
             __html: JSON.stringify(organizationJsonLd),
           }}
         />
-        <SmoothScroll>
-          <Background />
-          <Navbar />
-          <main className="relative">{children}</main>
-          <Footer />
-        </SmoothScroll>
+        <MotionProvider>
+          <SmoothScroll>
+            <Background />
+            <Navbar />
+            <main className="relative">{children}</main>
+            <Footer />
+          </SmoothScroll>
+        </MotionProvider>
       </body>
     </html>
   );

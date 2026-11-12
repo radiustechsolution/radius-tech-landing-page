@@ -11,6 +11,8 @@ import {
 import { BeamCard } from "@/components/ui/BeamCard";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { projects, type Project } from "@/lib/projects";
+import { DESKTOP_QUERY, useMediaQuery } from "@/lib/useMedia";
+import { cn } from "@/lib/utils";
 import { ProjectMock } from "./portfolio/ProjectMocks";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -20,39 +22,43 @@ function ProjectCard({
   index,
   total,
   progress,
+  desktop,
 }: {
   project: Project;
   index: number;
   total: number;
   progress: MotionValue<number>;
+  desktop: boolean;
 }) {
   const isLast = index === total - 1;
-
-  // Each card reaches the top at index / (total - 1) of the scroll
   const seg = 1 / Math.max(1, total - 1);
   const arrive = Math.min(index * seg, 0.999);
   const covered = Math.min(arrive + seg, 1);
 
-  // Shrink as later cards stack on top
   const scale = useTransform(
     progress,
     [arrive, 1],
     [1, isLast ? 1 : 1 - (total - 1 - index) * 0.04],
   );
-
-  // Stay bright while on top; darken only while the next card slides over
   const dim = useTransform(progress, [arrive, covered], [0, isLast ? 0 : 0.55]);
 
   return (
-    <div className="sticky top-0 flex h-dvh items-start justify-center pt-[96px]">
+    // Desktop: sticky stacking cards. Phones/tablets: a normal list.
+    <div
+      className={
+        desktop
+          ? "sticky top-0 flex h-dvh items-start justify-center pt-[96px]"
+          : "pt-4"
+      }
+    >
       <motion.div
-        style={{ scale, marginTop: index * 22 }}
+        style={desktop ? { scale, marginTop: index * 22 } : undefined}
         className="relative w-full origin-top"
       >
         <BeamCard
           delay={-index * 1.3}
           speed={8}
-          className="h-[min(580px,72dvh)] w-full"
+          className={cn("w-full", desktop && "h-[min(580px,72dvh)]")}
         >
           <div className="relative grid h-full md:grid-cols-2">
             {/* Text */}
@@ -103,10 +109,9 @@ function ProjectCard({
               </div>
             </div>
 
-            {/* Mockup */}
-            <div className="relative hidden overflow-hidden border-l border-white/[0.06] md:block">
+            {/* Mockup (tablet & desktop) */}
+            <div className="relative hidden min-h-[520px] overflow-hidden border-l border-white/[0.06] md:block">
               <div className="bg-grid absolute inset-0 opacity-80 [mask-image:none]" />
-              <div className="absolute top-1/2 left-1/2 size-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-silver-200/[0.07] blur-[80px]" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="scale-[0.85] lg:scale-100">
                   <ProjectMock kind={project.mock} />
@@ -116,11 +121,12 @@ function ProjectCard({
           </div>
         </BeamCard>
 
-        {/* Darken when covered */}
-        <motion.div
-          style={{ opacity: dim }}
-          className="pointer-events-none absolute inset-0 z-10 rounded-2xl bg-black"
-        />
+        {desktop && (
+          <motion.div
+            style={{ opacity: dim }}
+            className="pointer-events-none absolute inset-0 z-10 rounded-2xl bg-black"
+          />
+        )}
       </motion.div>
     </div>
   );
@@ -128,13 +134,14 @@ function ProjectCard({
 
 export function Portfolio() {
   const stackRef = useRef<HTMLDivElement>(null);
+  const desktop = useMediaQuery(DESKTOP_QUERY);
   const { scrollYProgress } = useScroll({
     target: stackRef,
     offset: ["start start", "end end"],
   });
 
   return (
-    <section id="work" className="relative pt-28 md:pt-36">
+    <section id="work" className="relative pt-28 pb-12 md:pt-36 lg:pb-0">
       <div className="container-x">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -159,7 +166,7 @@ export function Portfolio() {
           </GlowButton>
         </motion.div>
 
-        <div ref={stackRef} className="relative mt-4">
+        <div ref={stackRef} className="relative mt-6">
           {projects.map((p, i) => (
             <ProjectCard
               key={p.slug}
@@ -167,6 +174,7 @@ export function Portfolio() {
               index={i}
               total={projects.length}
               progress={scrollYProgress}
+              desktop={desktop}
             />
           ))}
         </div>

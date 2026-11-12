@@ -125,23 +125,21 @@ export function TechStack() {
           </div>
         </motion.div>
 
-        {/* ---------- Orbit ---------- */}
+        {/* ---------- Orbit (desktop only) ---------- */}
         <motion.div
           initial={{ opacity: 0, scale: 0.92 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, margin: "-100px" }}
           transition={{ duration: 1.2, ease }}
-          className="relative h-[340px] min-w-0 sm:h-[480px] lg:col-span-7 lg:h-[620px]"
+          className="relative hidden h-[620px] min-w-0 lg:col-span-7 lg:block"
         >
           <div
             onMouseEnter={() => setOrbitHover(true)}
             onMouseLeave={() => setOrbitHover(false)}
-            className="absolute top-1/2 left-1/2 size-[600px] -translate-x-1/2 -translate-y-1/2 scale-[0.52] sm:scale-[0.78] lg:scale-100"
+            className="absolute top-1/2 left-1/2 size-[600px] -translate-x-1/2 -translate-y-1/2"
           >
-            {/* Glow */}
-            <div className="absolute top-1/2 left-1/2 size-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-silver-200/[0.06] blur-[80px]" />
+            <div className="absolute top-1/2 left-1/2 size-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(217,220,227,0.07),transparent)]" />
 
-            {/* Rings */}
             {rings.map((ring, ri) => {
               const isActive = active === ri;
               const spin = `spin ${ring.duration}s linear infinite${ring.reverse ? " reverse" : ""}`;
@@ -199,7 +197,6 @@ export function TechStack() {
               );
             })}
 
-            {/* Center hub */}
             <div className="group absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
               <motion.span
                 aria-hidden

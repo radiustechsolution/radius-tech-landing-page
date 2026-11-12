@@ -40,6 +40,9 @@
   --animate-eq: eq 1.6s ease-in-out infinite;
   --animate-float: float 4s ease-in-out infinite;
   --animate-cursor: cursor-path 6s ease-in-out infinite;
+  --animate-blink: blink 4.5s ease-in-out infinite;
+  --animate-look: look 7s ease-in-out infinite;
+  --animate-glow: glow 2s ease-in-out infinite;
 
   /* Above-the-fold entrances (CSS, so they start before JavaScript loads) */
   --animate-rise: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -114,6 +117,39 @@
     }
     75% {
       transform: translate(170px, 20px);
+    }
+  }
+  @keyframes blink {
+    0%,
+    90%,
+    100% {
+      transform: scaleY(1);
+    }
+    94% {
+      transform: scaleY(0.1);
+    }
+  }
+  @keyframes look {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20%,
+    35% {
+      transform: translateX(-9px);
+    }
+    55%,
+    75% {
+      transform: translateX(9px);
+    }
+  }
+  @keyframes glow {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.35;
     }
   }
   @keyframes rise {
@@ -232,6 +268,24 @@
   );
 }
 
+@utility svg-self {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+@utility svg-self-bottom {
+  transform-box: fill-box;
+  transform-origin: bottom;
+}
+
+/* Hide scrollbars on swipe carousels */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* ---------- Components ---------- */
 @layer components {
   .bg-grid {
@@ -262,7 +316,6 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 
-  /* Logo hover motion */
   .logo-needle,
   .logo-outer {
     transform-box: view-box;
@@ -276,7 +329,7 @@
     transform: rotate(-60deg);
   }
 
-  /* ---------- Beam card (light running around the border) ---------- */
+  /* ---------- Beam card ---------- */
   .beam-card {
     position: relative;
     isolation: isolate;
@@ -337,24 +390,41 @@
   }
 }
 
-/* ---------- Performance: touch devices ---------- */
-@media (hover: none), (max-width: 767px) {
-  /* Static silver border instead of the moving light */
+/* ================================================================== */
+/* Performance: phones & tablets (anything without a mouse or < 1024)  */
+/* ================================================================== */
+@media (hover: none), (max-width: 1023px) {
   .beam-card::before {
     animation: none;
     background: linear-gradient(rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.1));
   }
 
-  /* No cursor on touch devices */
   .beam-card::after,
   .spot-fill {
     display: none;
   }
+
+  .conic-beam {
+    display: none;
+  }
+
+  /*
+   * Stop looping decorations.
+   * Kept running: the drawn hero robot and the testimonials marquee
+   * (both are cheap GPU transforms).
+   */
+  .animate-eq:not(.mobile-robot *),
+  .animate-float:not(.mobile-robot *),
+  .animate-dash,
+  .animate-cursor,
+  .animate-aurora-1,
+  .animate-aurora-2 {
+    animation: none !important;
+  }
 }
 
-/* ---------- Performance: phones ---------- */
+/* Phones */
 @media (max-width: 767px) {
-  /* Large blurred glows are very expensive on phones: hide them */
   [class*="blur-[7"],
   [class*="blur-[8"],
   [class*="blur-[9"],
@@ -363,7 +433,6 @@
     display: none !important;
   }
 
-  /* No frosted-glass blur on phones */
   .backdrop-blur,
   .backdrop-blur-sm,
   .backdrop-blur-md,
@@ -373,7 +442,6 @@
     backdrop-filter: none !important;
   }
 
-  /* Navbar becomes nearly solid instead of blurred */
   header .bg-black\/75 {
     background-color: rgb(0 0 0 / 0.94) !important;
   }
