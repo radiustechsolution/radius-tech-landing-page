@@ -24,6 +24,7 @@ const titleLines: { text: string; className?: string }[][] = [
   [{ text: "digital products" }],
 ];
 
+/* Title words animate with CSS so they appear as soon as the HTML arrives */
 function Title() {
   let wordIndex = 0;
 
@@ -37,21 +38,15 @@ function Title() {
               return (
                 <span key={`${li}-${i}`}>
                   <span className="inline-block overflow-hidden pr-[0.06em] pb-[0.12em] -mb-[0.12em] align-bottom">
-                    <motion.span
+                    <span
                       className={cn(
-                        "inline-block",
+                        "inline-block animate-rise",
                         part.className ?? "text-gradient",
                       )}
-                      initial={{ y: "115%" }}
-                      animate={{ y: "0%" }}
-                      transition={{
-                        delay: 0.15 + i * 0.08,
-                        duration: 0.9,
-                        ease,
-                      }}
+                      style={{ animationDelay: `${0.05 + i * 0.06}s` }}
                     >
                       {word}
-                    </motion.span>
+                    </span>
                   </span>{" "}
                 </span>
               );
@@ -67,7 +62,20 @@ export function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const sceneRef = useRef<HTMLDivElement>(null);
   const [sceneVisible, setSceneVisible] = useState(true);
+  const [mountScene, setMountScene] = useState(false);
 
+  // Load the 3D robot only after the page has finished its first work
+  useEffect(() => {
+    const start = () => setMountScene(true);
+    if ("requestIdleCallback" in window) {
+      const id = window.requestIdleCallback(start, { timeout: 1500 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(start, 600);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Pause 3D rendering when the hero is off screen
   useEffect(() => {
     const el = sceneRef.current;
     if (!el) return;
@@ -100,20 +108,16 @@ export function Hero() {
         >
           <Title />
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.8, ease }}
-            className="mt-6 max-w-md text-lg leading-relaxed text-silver-400"
+          <p
+            className="mt-6 max-w-md animate-fade-up text-lg leading-relaxed text-silver-400"
+            style={{ animationDelay: "0.35s" }}
           >
             Apps, platforms and fintech systems built to scale your business.
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.05, duration: 0.8, ease }}
-            className="mt-10 flex flex-col gap-3 sm:flex-row"
+          <div
+            className="mt-10 flex animate-fade-up flex-col gap-3 sm:flex-row"
+            style={{ animationDelay: "0.45s" }}
           >
             <GlowButton href="/start-project" variant="primary" size="lg">
               Start a Project
@@ -121,7 +125,7 @@ export function Hero() {
             <GlowButton href="/#work" variant="outline" size="lg">
               See Our Work
             </GlowButton>
-          </motion.div>
+          </div>
         </motion.div>
 
         {/* ---------- 3D Scene ---------- */}
@@ -130,22 +134,23 @@ export function Hero() {
           style={{ scale: sceneScale, y: sceneY }}
           className="relative h-[440px] sm:h-[540px] lg:col-span-6 lg:h-[660px]"
         >
-          <div className="absolute top-1/2 left-1/2 -z-10 size-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-silver-200/[0.08] blur-[90px]" />
+          <div className="absolute top-1/2 left-1/2 -z-10 size-[70%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(217,220,227,0.12),transparent)]" />
 
-          {/* Canvas is wider than the column so nothing gets cut — robot keeps full size */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.92 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 1.4, ease }}
-            className="pointer-events-none absolute inset-y-0 left-1/2 w-[150%] -translate-x-1/2 lg:w-[160%]"
-          >
-            <RobotScene active={sceneVisible} />
-          </motion.div>
+          {mountScene && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2, ease }}
+              className="pointer-events-none absolute inset-y-0 left-1/2 w-[150%] -translate-x-1/2 lg:w-[160%]"
+            >
+              <RobotScene active={sceneVisible} />
+            </motion.div>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4, duration: 0.9, ease }}
+            transition={{ delay: 0.9, duration: 0.9, ease }}
             className="absolute bottom-6 left-0 z-10 hidden sm:block"
           >
             <TypingTerminal />
@@ -157,7 +162,7 @@ export function Hero() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.8, duration: 1 }}
+        transition={{ delay: 1.2, duration: 1 }}
         className="pointer-events-none absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 lg:flex"
       >
         <span className="font-mono text-[10px] uppercase tracking-[0.3em] text-silver-600">

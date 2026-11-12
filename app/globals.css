@@ -38,6 +38,11 @@
   --animate-aurora-2: aurora-2 26s ease-in-out infinite;
   --animate-dash: dash 1.2s linear infinite;
 
+  /* Above-the-fold entrances (CSS, so they start before JavaScript loads) */
+  --animate-rise: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-up: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-drop-in: drop-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+
   @keyframes marquee {
     from {
       transform: translateX(0);
@@ -67,6 +72,34 @@
   @keyframes dash {
     to {
       stroke-dashoffset: -20;
+    }
+  }
+  @keyframes rise {
+    from {
+      transform: translateY(115%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes drop-in {
+    from {
+      opacity: 0;
+      transform: translateY(-24px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }
@@ -225,7 +258,6 @@
       linear-gradient(#000 0 0);
   }
 
-  /* Base border + travelling light */
   .beam-card::before {
     background:
       conic-gradient(
@@ -240,7 +272,6 @@
     animation-delay: var(--beam-delay, 0s);
   }
 
-  /* Border lights up near the cursor */
   .beam-card::after {
     background: radial-gradient(
       300px circle at var(--x, -999px) var(--y, -999px),
@@ -255,13 +286,27 @@
     opacity: 1;
   }
 
-  /* Soft fill that follows the cursor inside a card */
   .spot-fill {
     background: radial-gradient(
       480px circle at var(--x, -999px) var(--y, -999px),
       rgb(255 255 255 / 0.06),
       transparent 40%
     );
+  }
+}
+
+/* ---------- Performance: touch devices & small screens ---------- */
+@media (hover: none), (max-width: 767px) {
+  /* Static silver border instead of the moving light */
+  .beam-card::before {
+    animation: none;
+    background: linear-gradient(rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.1));
+  }
+
+  /* No cursor on touch devices */
+  .beam-card::after,
+  .spot-fill {
+    display: none;
   }
 }
 

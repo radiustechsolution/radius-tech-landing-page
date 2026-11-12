@@ -6,6 +6,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import type { MotionValue } from "motion/react";
 
+import { isLowPower } from "@/lib/device";
 import {
   PIECES,
   SCREEN,
@@ -36,7 +37,6 @@ const ORDER = {
   island: 30,
 };
 
-/* Timing: all pieces land by ~0.74, then the phone holds, then goes live */
 const PIECE_START = 0.04;
 const PIECE_STEP = 0.11;
 const PIECE_DURATION = 0.15;
@@ -103,13 +103,11 @@ function Piece({
     m.scale.set(s, s, 1);
     mat.current.opacity = clamp01(p * 4);
 
-    // Dashed slot fades out as the piece lands
     if (slotMat.current) slotMat.current.opacity = 1 - clamp01((p - 0.7) / 0.3);
   });
 
   return (
     <>
-      {/* Empty slot outline */}
       <mesh position={[0, def.y, SCREEN.z + 0.004]} renderOrder={ORDER.slots}>
         <planeGeometry args={[def.w, def.h]} />
         <meshBasicMaterial
@@ -121,7 +119,6 @@ function Piece({
         />
       </mesh>
 
-      {/* The UI piece */}
       <mesh ref={mesh} visible={false} renderOrder={ORDER.pieces + index}>
         <planeGeometry args={[def.w, def.h]} />
         <meshBasicMaterial
@@ -162,23 +159,24 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
       bevelEnabled: true,
       bevelThickness: 0.03,
       bevelSize: 0.03,
-      bevelSegments: 8,
-      curveSegments: 32,
+      bevelSegments: 6,
+      curveSegments: 24,
     });
     g.center();
     return g;
   }, []);
 
   const bezelGeo = useMemo(
-    () => new THREE.ShapeGeometry(roundedRectShape(1.52, 3.22, 0.21), 32),
+    () => new THREE.ShapeGeometry(roundedRectShape(1.52, 3.22, 0.21), 24),
     [],
   );
   const islandGeo = useMemo(
-    () => new THREE.ShapeGeometry(roundedRectShape(0.4, 0.11, 0.055), 16),
+    () => new THREE.ShapeGeometry(roundedRectShape(0.4, 0.11, 0.055), 12),
     [],
   );
 
   useEffect(() => {
+    if (!window.matchMedia("(pointer: fine)").matches) return;
     const onMove = (e: PointerEvent) => {
       pointer.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       pointer.current.y = -((e.clientY / window.innerHeight) * 2 - 1);
@@ -194,7 +192,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
     const p = progress.get();
     const t = state.clock.elapsedTime;
 
-    // Turn from angled to facing the user
     const turn = easeOut(clamp01(p / 0.75));
     const targetY =
       lerp(-0.6, 0, turn) + pointer.current.x * 0.15 + Math.sin(t * 0.6) * 0.03;
@@ -203,7 +200,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
     g.rotation.x = damp(g.rotation.x, targetX, 6, delta);
     g.position.y = Math.sin(t * 1.1) * 0.05;
 
-    // Live state at the end
     const live = clamp01((p - 0.84) / 0.1);
     g.scale.setScalar(1 + live * 0.05);
     if (glowMat.current) glowMat.current.opacity = live * 0.9;
@@ -218,7 +214,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
 
   return (
     <group ref={group}>
-      {/* Glow behind */}
       <mesh position={[0, 0, -0.4]} renderOrder={ORDER.glow}>
         <planeGeometry args={[5, 5]} />
         <meshBasicMaterial
@@ -231,7 +226,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         />
       </mesh>
 
-      {/* Signal rings */}
       {[ringA, ringB].map((ref, i) => (
         <mesh
           key={i}
@@ -249,7 +243,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         </mesh>
       ))}
 
-      {/* Body */}
       <mesh geometry={bodyGeo}>
         <meshStandardMaterial
           color="#d9dde4"
@@ -259,7 +252,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         />
       </mesh>
 
-      {/* Side buttons */}
       <mesh position={[-0.815, 0.85, 0]}>
         <boxGeometry args={[0.03, 0.26, 0.06]} />
         <meshStandardMaterial color="#c8ccd4" metalness={1} roughness={0.3} />
@@ -273,7 +265,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         <meshStandardMaterial color="#c8ccd4" metalness={1} roughness={0.3} />
       </mesh>
 
-      {/* Black glass front */}
       <mesh geometry={bezelGeo} position={[0, 0, 0.081]}>
         <meshPhysicalMaterial
           color="#020203"
@@ -283,7 +274,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         />
       </mesh>
 
-      {/* Screen base */}
       <mesh position={[0, 0, SCREEN.z]} renderOrder={ORDER.screen}>
         <planeGeometry args={[SCREEN.w, SCREEN.h]} />
         <meshBasicMaterial
@@ -294,7 +284,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         />
       </mesh>
 
-      {/* Dynamic island */}
       <mesh
         geometry={islandGeo}
         position={[0, 1.49, SCREEN.z + 0.03]}
@@ -303,7 +292,6 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         <meshBasicMaterial color="#000000" transparent depthWrite={false} />
       </mesh>
 
-      {/* Slots + flying UI pieces */}
       {PIECES.map((def, i) => (
         <Piece
           key={def.id}
@@ -327,6 +315,7 @@ export default function PhoneScene({
   progress: MotionValue<number>;
   active?: boolean;
 }) {
+  const [lite] = useState(isLowPower);
   const [fontsReady, setFontsReady] = useState(false);
 
   useEffect(() => {
@@ -339,10 +328,14 @@ export default function PhoneScene({
 
   return (
     <Canvas
-      dpr={[1, 1.75]}
+      dpr={lite ? [1, 1.25] : [1, 1.75]}
       frameloop={active ? "always" : "never"}
       camera={{ position: [0, 0, 7.2], fov: 35 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{
+        antialias: !lite,
+        alpha: true,
+        powerPreference: "high-performance",
+      }}
     >
       <ambientLight intensity={0.3} />
       <directionalLight position={[3, 5, 4]} intensity={1.1} />
@@ -354,15 +347,17 @@ export default function PhoneScene({
 
       {fontsReady && <Phone progress={progress} />}
 
-      <ContactShadows
-        position={[0, -2.05, 0]}
-        opacity={0.5}
-        scale={6}
-        blur={2.6}
-        far={3}
-      />
+      {!lite && (
+        <ContactShadows
+          position={[0, -2.05, 0]}
+          opacity={0.5}
+          scale={6}
+          blur={2.6}
+          far={3}
+        />
+      )}
 
-      <Environment resolution={256}>
+      <Environment resolution={lite ? 64 : 256} frames={1}>
         <Lightformer
           form="rect"
           intensity={3}

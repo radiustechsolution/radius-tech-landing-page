@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
@@ -10,6 +10,7 @@ import {
   Lightformer,
 } from "@react-three/drei";
 import { Robot } from "./Robot";
+import { isLowPower } from "@/lib/device";
 
 function Orbits() {
   const a = useRef<THREE.Group>(null);
@@ -25,7 +26,7 @@ function Orbits() {
       <group rotation={[Math.PI / 2.35, 0.15, 0]}>
         <group ref={a}>
           <mesh>
-            <torusGeometry args={[2.15, 0.006, 8, 200]} />
+            <torusGeometry args={[2.15, 0.006, 8, 160]} />
             <meshBasicMaterial color="#ffffff" transparent opacity={0.35} />
           </mesh>
           <mesh position={[2.15, 0, 0]}>
@@ -42,7 +43,7 @@ function Orbits() {
       <group rotation={[Math.PI / 2.1, -0.35, 0.2]}>
         <group ref={b}>
           <mesh>
-            <torusGeometry args={[2.5, 0.004, 8, 200]} />
+            <torusGeometry args={[2.5, 0.004, 8, 160]} />
             <meshBasicMaterial color="#ffffff" transparent opacity={0.18} />
           </mesh>
           <mesh position={[-2.5, 0, 0]}>
@@ -99,12 +100,19 @@ function FloatingShapes() {
 }
 
 export default function RobotScene({ active = true }: { active?: boolean }) {
+  // Decided once on mount (this component only runs in the browser)
+  const [lite] = useState(isLowPower);
+
   return (
     <Canvas
-      dpr={[1, 1.75]}
+      dpr={lite ? [1, 1.25] : [1, 1.75]}
       frameloop={active ? "always" : "never"}
       camera={{ position: [0, -0.05, 8], fov: 35 }}
-      gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+      gl={{
+        antialias: !lite,
+        alpha: true,
+        powerPreference: "high-performance",
+      }}
     >
       <ambientLight intensity={0.25} />
       <directionalLight position={[3, 5, 4]} intensity={1.2} />
@@ -116,17 +124,25 @@ export default function RobotScene({ active = true }: { active?: boolean }) {
 
       <Robot />
       <Orbits />
-      <FloatingShapes />
+      {!lite && <FloatingShapes />}
 
-      <ContactShadows
-        position={[0, -2.2, 0]}
-        opacity={0.55}
-        scale={8}
-        blur={2.6}
-        far={4}
-      />
+      {lite ? (
+        // Fake soft shadow: a single transparent disc, almost free to draw
+        <mesh position={[0, -2.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+          <circleGeometry args={[1.6, 48]} />
+          <meshBasicMaterial color="#000000" transparent opacity={0.35} />
+        </mesh>
+      ) : (
+        <ContactShadows
+          position={[0, -2.2, 0]}
+          opacity={0.55}
+          scale={8}
+          blur={2.6}
+          far={4}
+        />
+      )}
 
-      <Environment resolution={256}>
+      <Environment resolution={lite ? 64 : 256} frames={1}>
         <Lightformer
           form="rect"
           intensity={3}
