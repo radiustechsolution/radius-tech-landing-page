@@ -10,15 +10,15 @@
   --color-brand-600: #0f45e0;
   --color-brand-700: #0c36b0;
 
-  /* Silver scale */
+  /* Silver scale (600/700 lightened for readable contrast on black) */
   --color-silver-50: #f7f8fa;
   --color-silver-100: #eceef2;
   --color-silver-200: #d9dce3;
   --color-silver-300: #bfc4cd;
   --color-silver-400: #9aa0ab;
-  --color-silver-500: #747a85;
-  --color-silver-600: #555a63;
-  --color-silver-700: #3a3e45;
+  --color-silver-500: #858b96;
+  --color-silver-600: #7e848e;
+  --color-silver-700: #70757f;
   --color-silver: #c8ccd4;
 
   /* Surfaces */
@@ -44,7 +44,7 @@
   --animate-look: look 7s ease-in-out infinite;
   --animate-glow: glow 2s ease-in-out infinite;
 
-  /* Above-the-fold entrances (CSS, so they start before JavaScript loads) */
+  /* Above-the-fold entrances (desktop only, see below) */
   --animate-rise: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-up: fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-drop-in: drop-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -278,7 +278,6 @@
   transform-origin: bottom;
 }
 
-/* Hide scrollbars on swipe carousels */
 @utility no-scrollbar {
   scrollbar-width: none;
   &::-webkit-scrollbar {
@@ -394,6 +393,13 @@
 /* Performance: phones & tablets (anything without a mouse or < 1024)  */
 /* ================================================================== */
 @media (hover: none), (max-width: 1023px) {
+  /* Hero, navbar and robot show instantly (faster Largest Contentful Paint) */
+  .animate-rise,
+  .animate-fade-up,
+  .animate-drop-in {
+    animation: none !important;
+  }
+
   .beam-card::before {
     animation: none;
     background: linear-gradient(rgb(255 255 255 / 0.1), rgb(255 255 255 / 0.1));
@@ -408,11 +414,7 @@
     display: none;
   }
 
-  /*
-   * Stop looping decorations.
-   * Kept running: the drawn hero robot and the testimonials marquee
-   * (both are cheap GPU transforms).
-   */
+  /* Stop looping decorations (robot and testimonials marquee keep running) */
   .animate-eq:not(.mobile-robot *),
   .animate-float:not(.mobile-robot *),
   .animate-dash,
