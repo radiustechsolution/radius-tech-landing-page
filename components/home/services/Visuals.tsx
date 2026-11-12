@@ -84,22 +84,16 @@ export function MobileVisual() {
       </div>
 
       {chips.map((c) => (
-        <motion.span
+        <span
           key={c.label}
-          animate={{ y: [0, -8, 0] }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: c.d,
-          }}
+          style={{ animationDelay: `-${c.d}s` }}
           className={cn(
-            "absolute hidden rounded-md border border-white/10 bg-black/70 px-3 py-1.5 font-mono text-[11px] text-silver-300 backdrop-blur sm:block",
+            "absolute hidden animate-float rounded-md border border-white/10 bg-black/70 px-3 py-1.5 font-mono text-[11px] text-silver-300 sm:block",
             c.className,
           )}
         >
           {c.label}
-        </motion.span>
+        </span>
       ))}
     </div>
   );
@@ -112,10 +106,8 @@ export function MobileVisual() {
 export function FintechVisual() {
   return (
     <div className="absolute inset-0 flex items-center justify-center [perspective:900px]">
-      {/* back card */}
       <div className="absolute h-[124px] w-[200px] translate-x-10 -translate-y-4 rotate-[8deg] rounded-xl border border-white/10 bg-ink-3" />
 
-      {/* front card */}
       <div className="relative h-[130px] w-[210px] rounded-xl bg-linear-to-br from-white via-silver-200 to-silver-500 p-4 text-black shadow-[0_30px_50px_-20px_rgba(0,0,0,0.9)] transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] [transform:rotateX(20deg)_rotateY(-20deg)] group-hover:[transform:rotateX(0deg)_rotateY(0deg)_translateY(-6px)]">
         <div className="flex items-start justify-between">
           <div className="h-6 w-8 rounded-md bg-linear-to-br from-silver-500/60 to-silver-700/40" />
@@ -203,15 +195,12 @@ export function BackendVisual() {
           <span className="font-mono text-[11px] text-silver-400">{name}</span>
           <div className="flex h-4 items-end gap-[3px]">
             {Array.from({ length: 12 }).map((_, j) => (
-              <motion.span
+              <span
                 key={j}
-                className="block h-4 w-[3px] origin-bottom rounded-sm bg-white/70"
-                animate={{ scaleY: [0.25, 1, 0.4, 0.85, 0.25] }}
-                transition={{
-                  duration: 1.4 + ((i + j) % 4) * 0.3,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: j * 0.07 + i * 0.2,
+                className="block h-4 w-[3px] origin-bottom animate-eq rounded-sm bg-white/70"
+                style={{
+                  animationDuration: `${1.4 + ((i + j) % 4) * 0.3}s`,
+                  animationDelay: `-${(j * 0.07 + i * 0.2).toFixed(2)}s`,
                 }}
               />
             ))}
@@ -360,12 +349,10 @@ export function DesignVisual() {
           <div className="h-2 w-28 rounded bg-white/20" />
         </div>
 
-        {/* Moving cursor */}
-        <motion.svg
+        {/* Moving cursor (CSS animation) */}
+        <svg
           viewBox="0 0 24 24"
-          className="absolute top-0 left-0 size-5 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
-          animate={{ x: [10, 64, 118, 170, 10], y: [30, 18, 34, 20, 30] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-0 left-0 size-5 animate-cursor drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
         >
           <path
             d="M4 3l7 17 2.5-7L21 10.5 4 3z"
@@ -373,7 +360,7 @@ export function DesignVisual() {
             stroke="#000"
             strokeWidth="1"
           />
-        </motion.svg>
+        </svg>
       </div>
     </div>
   );

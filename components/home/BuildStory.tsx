@@ -45,6 +45,7 @@ export function BuildStory() {
   const sectionRef = useRef<HTMLElement>(null);
   const [step, setStep] = useState(0);
   const [inView, setInView] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -61,13 +62,17 @@ export function BuildStory() {
     setStep((prev) => (prev === s ? prev : s));
   });
 
-  // Only render 3D when the section is near the screen
+  // Load the 3D phone only when the section gets close, then keep it
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), {
-      rootMargin: "200px 0px",
-    });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        setInView(e.isIntersecting);
+        if (e.isIntersecting) setMounted(true);
+      },
+      { rootMargin: "100% 0px" },
+    );
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -166,9 +171,11 @@ export function BuildStory() {
 
           {/* ---------- Phone ---------- */}
           <div className="relative order-1 h-full min-h-[320px] lg:order-2 lg:col-span-7">
-            <div className="absolute top-1/2 left-1/2 -z-10 size-[60%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-silver-200/[0.06] blur-[90px]" />
+            <div className="absolute top-1/2 left-1/2 -z-10 size-[60%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(closest-side,rgba(217,220,227,0.08),transparent)]" />
             <div className="pointer-events-none absolute inset-0">
-              <PhoneScene progress={scrollYProgress} active={inView} />
+              {mounted && (
+                <PhoneScene progress={scrollYProgress} active={inView} />
+              )}
             </div>
           </div>
         </div>

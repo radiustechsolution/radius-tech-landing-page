@@ -37,6 +37,9 @@
   --animate-aurora-1: aurora-1 22s ease-in-out infinite;
   --animate-aurora-2: aurora-2 26s ease-in-out infinite;
   --animate-dash: dash 1.2s linear infinite;
+  --animate-eq: eq 1.6s ease-in-out infinite;
+  --animate-float: float 4s ease-in-out infinite;
+  --animate-cursor: cursor-path 6s ease-in-out infinite;
 
   /* Above-the-fold entrances (CSS, so they start before JavaScript loads) */
   --animate-rise: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -72,6 +75,45 @@
   @keyframes dash {
     to {
       stroke-dashoffset: -20;
+    }
+  }
+  @keyframes eq {
+    0%,
+    100% {
+      transform: scaleY(0.25);
+    }
+    25% {
+      transform: scaleY(1);
+    }
+    50% {
+      transform: scaleY(0.4);
+    }
+    75% {
+      transform: scaleY(0.85);
+    }
+  }
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-8px);
+    }
+  }
+  @keyframes cursor-path {
+    0%,
+    100% {
+      transform: translate(10px, 30px);
+    }
+    25% {
+      transform: translate(64px, 18px);
+    }
+    50% {
+      transform: translate(118px, 34px);
+    }
+    75% {
+      transform: translate(170px, 20px);
     }
   }
   @keyframes rise {
@@ -295,7 +337,7 @@
   }
 }
 
-/* ---------- Performance: touch devices & small screens ---------- */
+/* ---------- Performance: touch devices ---------- */
 @media (hover: none), (max-width: 767px) {
   /* Static silver border instead of the moving light */
   .beam-card::before {
@@ -307,6 +349,33 @@
   .beam-card::after,
   .spot-fill {
     display: none;
+  }
+}
+
+/* ---------- Performance: phones ---------- */
+@media (max-width: 767px) {
+  /* Large blurred glows are very expensive on phones: hide them */
+  [class*="blur-[7"],
+  [class*="blur-[8"],
+  [class*="blur-[9"],
+  [class*="blur-[1"],
+  .blur-3xl {
+    display: none !important;
+  }
+
+  /* No frosted-glass blur on phones */
+  .backdrop-blur,
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Navbar becomes nearly solid instead of blurred */
+  header .bg-black\/75 {
+    background-color: rgb(0 0 0 / 0.94) !important;
   }
 }
 

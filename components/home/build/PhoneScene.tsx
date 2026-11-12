@@ -27,7 +27,11 @@ const easeOutBack = (t: number) => {
   return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2);
 };
 
-/* Draw order (higher = drawn later = on top) */
+/*
+ * Draw order (higher = drawn later = on top).
+ * Screen layers use depthTest={false} so phones with low depth precision
+ * still show them; renderOrder alone decides what's on top.
+ */
 const ORDER = {
   glow: 0,
   rings: 1,
@@ -114,6 +118,7 @@ function Piece({
           ref={slotMat}
           map={slotTexture}
           transparent
+          depthTest={false}
           depthWrite={false}
           toneMapped={false}
         />
@@ -125,6 +130,7 @@ function Piece({
           ref={mat}
           map={texture}
           transparent
+          depthTest={false}
           depthWrite={false}
           toneMapped={false}
         />
@@ -214,6 +220,7 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
 
   return (
     <group ref={group}>
+      {/* Glow behind */}
       <mesh position={[0, 0, -0.4]} renderOrder={ORDER.glow}>
         <planeGeometry args={[5, 5]} />
         <meshBasicMaterial
@@ -226,6 +233,7 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         />
       </mesh>
 
+      {/* Signal rings */}
       {[ringA, ringB].map((ref, i) => (
         <mesh
           key={i}
@@ -243,6 +251,7 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         </mesh>
       ))}
 
+      {/* Body */}
       <mesh geometry={bodyGeo}>
         <meshStandardMaterial
           color="#d9dde4"
@@ -252,6 +261,7 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         />
       </mesh>
 
+      {/* Side buttons */}
       <mesh position={[-0.815, 0.85, 0]}>
         <boxGeometry args={[0.03, 0.26, 0.06]} />
         <meshStandardMaterial color="#c8ccd4" metalness={1} roughness={0.3} />
@@ -265,6 +275,7 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         <meshStandardMaterial color="#c8ccd4" metalness={1} roughness={0.3} />
       </mesh>
 
+      {/* Black glass front */}
       <mesh geometry={bezelGeo} position={[0, 0, 0.081]}>
         <meshPhysicalMaterial
           color="#020203"
@@ -274,24 +285,33 @@ function Phone({ progress }: { progress: MotionValue<number> }) {
         />
       </mesh>
 
+      {/* Screen base (always drawn over the glass) */}
       <mesh position={[0, 0, SCREEN.z]} renderOrder={ORDER.screen}>
         <planeGeometry args={[SCREEN.w, SCREEN.h]} />
         <meshBasicMaterial
           map={textures.screen}
           transparent
+          depthTest={false}
           depthWrite={false}
           toneMapped={false}
         />
       </mesh>
 
+      {/* Dynamic island */}
       <mesh
         geometry={islandGeo}
         position={[0, 1.49, SCREEN.z + 0.03]}
         renderOrder={ORDER.island}
       >
-        <meshBasicMaterial color="#000000" transparent depthWrite={false} />
+        <meshBasicMaterial
+          color="#000000"
+          transparent
+          depthTest={false}
+          depthWrite={false}
+        />
       </mesh>
 
+      {/* Slots + flying UI pieces */}
       {PIECES.map((def, i) => (
         <Piece
           key={def.id}
@@ -330,7 +350,8 @@ export default function PhoneScene({
     <Canvas
       dpr={lite ? [1, 1.25] : [1, 1.75]}
       frameloop={active ? "always" : "never"}
-      camera={{ position: [0, 0, 7.2], fov: 35 }}
+      // Tight near/far range = much better depth precision on phones
+      camera={{ position: [0, 0, 7.2], fov: 35, near: 1, far: 30 }}
       gl={{
         antialias: !lite,
         alpha: true,
