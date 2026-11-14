@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Training",
   description:
     "Learn web and mobile development with Radius Tech Solutions. Practical training in React, Next.js, Flutter and more.",
+  alternates: { canonical: "/training" },
 };
 
 export default function Page() {

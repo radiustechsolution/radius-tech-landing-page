@@ -52,11 +52,10 @@ export const metadata: Metadata = {
   authors: [{ name: site.name, url: site.url }],
   creator: site.name,
   publisher: site.name,
-  alternates: { canonical: "/" },
+  // Each page sets its own canonical address (see each page.tsx)
   openGraph: {
     type: "website",
     locale: "en_NG",
-    url: site.url,
     siteName: site.name,
     title: site.name,
     description: site.description,

@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "How Radius Tech Solutions Limited collects, uses and protects your personal information.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

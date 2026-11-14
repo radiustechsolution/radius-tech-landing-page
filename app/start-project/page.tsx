@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Start a Project",
   description:
     "Tell us about your idea. Mobile apps, websites, fintech platforms and more.",
+  alternates: { canonical: "/start-project" },
 };
 
 export default function StartProjectPage() {

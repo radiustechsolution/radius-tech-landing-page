@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "About",
   description:
     "Radius Tech Solutions Limited designs and builds mobile apps, web platforms and fintech systems, and trains the next generation of developers.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {
