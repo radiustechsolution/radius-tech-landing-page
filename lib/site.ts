@@ -1,7 +1,7 @@
 export const site = {
   name: "Radius Tech Solutions Limited",
   shortName: "Radius",
-  url: "https://radiustechsolutions.com",
+  url: "https://www.radiustechsolutions.com",
   description:
     "Radius Tech Solutions Limited builds smart digital products that help businesses streamline operations, scale faster, and achieve measurable growth.",
 
@@ -13,7 +13,7 @@ export const site = {
   whatsappNumber: "+234 816 820 8565",
   whatsapp: "https://wa.me/2348168208565",
 
-  email: "radiustechsolution@gmail.com", // TODO: add company email, e.g. hello@yourdomain.com
+  email: "", // TODO: add company email, e.g. hello@radiustechsolutions.com
   socials: [
     // TODO: confirm these links
     { label: "Instagram", href: "https://instagram.com/radiustechsolutions" },
