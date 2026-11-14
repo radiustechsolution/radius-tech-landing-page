@@ -8,7 +8,6 @@ import {
   type MotionValue,
 } from "motion/react";
 
-import { BeamCard } from "@/components/ui/BeamCard";
 import { GlowButton } from "@/components/ui/GlowButton";
 import { projects, type Project } from "@/lib/projects";
 import { DESKTOP_QUERY, useMediaQuery } from "@/lib/useMedia";
@@ -43,7 +42,6 @@ function ProjectCard({
   const dim = useTransform(progress, [arrive, covered], [0, isLast ? 0 : 0.55]);
 
   return (
-    // Desktop: sticky stacking cards. Phones/tablets: a normal list.
     <div
       className={
         desktop
@@ -53,13 +51,18 @@ function ProjectCard({
     >
       <motion.div
         style={desktop ? { scale, marginTop: index * 22 } : undefined}
-        className="relative w-full origin-top"
+        // Own GPU layer: scaling stays cheap and flicker-free
+        className="relative w-full origin-top will-change-transform [backface-visibility:hidden]"
       >
-        <BeamCard
-          delay={-index * 1.3}
-          speed={8}
-          className={cn("w-full", desktop && "h-[min(580px,72dvh)]")}
+        {/* Still border (no animated light inside a scaling card) */}
+        <div
+          className={cn(
+            "relative isolate overflow-hidden rounded-2xl border border-white/10 bg-ink-2",
+            desktop && "h-[min(580px,72dvh)]",
+          )}
         >
+          <div className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-silver-200/40 to-transparent" />
+
           <div className="relative grid h-full md:grid-cols-2">
             {/* Text */}
             <div className="relative flex flex-col justify-between p-6 md:p-10 lg:p-12">
@@ -119,7 +122,7 @@ function ProjectCard({
               </div>
             </div>
           </div>
-        </BeamCard>
+        </div>
 
         {desktop && (
           <motion.div

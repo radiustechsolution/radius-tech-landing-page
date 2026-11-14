@@ -75,6 +75,7 @@ function Browser({
   );
 }
 
+/* Solid background (no blur): blur inside a scaling card causes flicker */
 function FloatCard({
   children,
   className,
@@ -89,7 +90,7 @@ function FloatCard({
       animate={{ y: [0, -10, 0] }}
       transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut", delay }}
       className={cn(
-        "absolute rounded-xl border border-white/15 bg-ink-3/95 p-3.5 shadow-[0_30px_50px_-20px_rgba(0,0,0,0.95)] backdrop-blur",
+        "absolute rounded-xl border border-white/15 bg-ink-3 p-3.5 shadow-[0_30px_50px_-20px_rgba(0,0,0,0.95)] will-change-transform",
         className,
       )}
     >
@@ -173,12 +174,14 @@ function SavingsScreen() {
         </div>
       </div>
       <div className="mt-5 space-y-3.5">
-        {[
-          ["Rent", 60],
-          ["New car", 35],
-          ["Vacation", 82],
-        ].map(([g, p]) => (
-          <div key={g as string}>
+        {(
+          [
+            ["Rent", 60],
+            ["New car", 35],
+            ["Vacation", 82],
+          ] as const
+        ).map(([g, p]) => (
+          <div key={g}>
             <div className="flex justify-between text-[10px]">
               <span className="text-silver-300">{g}</span>
               <span className="font-mono text-silver-500">{p}%</span>
@@ -385,9 +388,11 @@ export function ProjectMock({ kind }: { kind: MockKind }) {
           <Phone>
             <VtuScreen />
           </Phone>
-          <FloatCard className="-left-28 top-28 hidden w-[170px] sm:block">
+          <FloatCard className="top-28 -left-28 hidden w-[170px] sm:block">
             <p className="text-[10px] text-silver-500">Data purchased</p>
-            <p className="mt-1 text-sm font-medium text-white">10GB · ₦3,000</p>
+            <p className="mt-1 text-sm font-medium text-white">
+              10GB for ₦3,000
+            </p>
           </FloatCard>
         </div>
       );
@@ -399,12 +404,12 @@ export function ProjectMock({ kind }: { kind: MockKind }) {
             <MarketplaceScreen />
           </Phone>
           <FloatCard
-            className="-right-28 top-32 hidden w-[180px] sm:block"
+            className="top-32 -right-28 hidden w-[180px] sm:block"
             delay={0.5}
           >
             <p className="text-[10px] text-silver-500">Booking confirmed</p>
             <p className="mt-1 text-sm font-medium text-white">
-              Tunde · Tomorrow 10am
+              Tunde, Tomorrow 10am
             </p>
           </FloatCard>
         </div>
@@ -417,7 +422,7 @@ export function ProjectMock({ kind }: { kind: MockKind }) {
             <CardsScreen />
           </Phone>
           <FloatCard
-            className="-left-28 bottom-28 hidden w-[170px] sm:block"
+            className="bottom-28 -left-28 hidden w-[170px] sm:block"
             delay={0.3}
           >
             <p className="text-[10px] text-silver-500">Card payment</p>

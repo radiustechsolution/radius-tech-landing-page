@@ -9,6 +9,7 @@ import { Portfolio } from "@/components/home/Portfolio";
 import { Testimonials } from "@/components/home/Testimonials";
 import { Engagement } from "@/components/home/Engagement";
 import { Training } from "@/components/home/Training";
+import { LatestPosts } from "@/components/home/LatestPosts";
 import { Faq } from "@/components/home/Faq";
 import { ProjectStarter } from "@/components/sections/ProjectStarter";
 
@@ -28,6 +29,7 @@ export default function Home() {
       <Testimonials />
       <Engagement />
       <Training />
+      <LatestPosts />
       <Faq />
       <ProjectStarter />
     </>

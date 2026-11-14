@@ -212,6 +212,15 @@
     background: rgb(29 93 255 / 0.5);
     color: #fff;
   }
+
+  /* Focus outline only for keyboard users, never on mouse clicks */
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  :focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.55);
+    outline-offset: 3px;
+  }
 }
 
 /* ---------- Utilities ---------- */
@@ -393,7 +402,6 @@
 /* Performance: phones & tablets (anything without a mouse or < 1024)  */
 /* ================================================================== */
 @media (hover: none), (max-width: 1023px) {
-  /* Hero, navbar and robot show instantly (faster Largest Contentful Paint) */
   .animate-rise,
   .animate-fade-up,
   .animate-drop-in {
@@ -414,7 +422,6 @@
     display: none;
   }
 
-  /* Stop looping decorations (robot and testimonials marquee keep running) */
   .animate-eq:not(.mobile-robot *),
   .animate-float:not(.mobile-robot *),
   .animate-dash,

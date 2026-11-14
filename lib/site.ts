@@ -29,6 +29,7 @@ export const navLinks = [
   { label: "About", href: "/about" },
   { label: "Solutions", href: "/solutions" },
   { label: "Training", href: "/training" },
+  { label: "Blog", href: "/blog" },
 ];
 
 /* Used by the navbar (Solutions opens the mega menu) */
@@ -36,6 +37,7 @@ export const mainNav = [
   { label: "Solutions", href: "/solutions", mega: true },
   { label: "About", href: "/about" },
   { label: "Training", href: "/training" },
+  { label: "Blog", href: "/blog" },
 ] as const;
 
 export type ServiceIconName =
